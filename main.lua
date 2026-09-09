@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice Recorder 2026
--- Version: 6.0 (Added Check for Update in About Section)
+-- Version: 6.2 (Updated Version Integration)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -51,107 +51,94 @@ function showMainTool()
     mainDlg.setTitle("New High Quality Voice Recorder 2026")
     
     local layout = {
-        LinearLayout;
-        orientation = "vertical";
-        padding = "25dp";
-        layout_width = "fill";
-        layout_height = "wrap";
+        LinearLayout,
+        orientation = "vertical",
+        padding = "25dp",
+        layout_width = "fill",
+        layout_height = "wrap",
         {
-            TextView;
+            TextView,
             text = "Developer: Aditya poddar",
-            textSize = "15sp";
-            textColor = 0xFF555555;
-            layout_marginBottom = "15dp";
-            gravity = Gravity.CENTER;
-        };
+            textSize = "15sp",
+            textColor = 0xFF555555,
+            layout_marginBottom = "15dp",
+            gravity = Gravity.CENTER,
+        },
         {
-            Switch;
-            id = "recordingToggle";
-            text = "Master Recording Switch (On/Off)",
-            textSize = "15sp";
-            layout_width = "fill";
-            layout_marginBottom = "15dp";
-            checked = true;
-        };
-        {
-            TextView;
+            TextView,
             text = "Select Recording Type (Format):",
-            textSize = "14sp";
-            layout_marginBottom = "5dp";
-        };
+            textSize = "14sp",
+            layout_marginBottom = "5dp",
+        },
         {
-            Spinner;
-            id = "formatSpinner";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "15dp";
-        };
+            Spinner,
+            id = "formatSpinner",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "15dp",
+        },
         {
-            Button;
+            Button,
             text = "Settings",
-            textSize = "16sp";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "10dp";
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "10dp",
             onClick = function()
                 showSettingsDialog()
-            end;
-        };
+            end,
+        },
         {
-            Button;
-            id = "pauseResumeBtn";
+            Button,
+            id = "pauseResumeBtn",
             text = "Pause Recording",
-            textSize = "16sp";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "10dp";
-            visibility = View.GONE; -- রেকর্ডিং শুরুর আগে হাইড থাকবে
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "10dp",
+            visibility = View.GONE, -- রেকর্ডিং শুরুর আগে হাইড থাকবে
             onClick = function()
                 togglePauseResume()
-            end;
-        };
+            end,
+        },
         {
-            Button;
-            id = "startStopBtn";
+            Button,
+            id = "startStopBtn",
             text = "Start Recording",
-            textSize = "16sp";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "10dp";
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "10dp",
             onClick = function()
                 if not isRecording then
-                    if views.recordingToggle.isChecked() then
-                        startRecordingProcess()
-                    else
-                        print("Please turn on the Master Recording Switch first!")
-                    end
+                    startRecordingProcess()
                 else
                     stopRecordingProcess()
                 end
-            end;
-        };
+            end,
+        },
         {
-            Button;
+            Button,
             text = "About & Guide",
-            textSize = "16sp";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "10dp";
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "10dp",
             onClick = function()
                 showAboutDialog()
-            end;
-        };
+            end,
+        },
         {
-            Button;
+            Button,
             text = "Exit & Close",
-            textSize = "16sp";
-            layout_width = "fill";
-            layout_height = "wrap";
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
             onClick = function()
                 mainDlg.dismiss()
                 pcall(function() activity.finish() end)
-            end;
-        };
+            end,
+        },
     }
     
     views = {}
@@ -185,51 +172,51 @@ function showSettingsDialog()
     setDlg.setTitle("Settings")
     
     local setLayout = {
-        LinearLayout;
-        orientation = "vertical";
-        padding = "20dp";
-        layout_width = "fill";
-        layout_height = "wrap";
+        LinearLayout,
+        orientation = "vertical",
+        padding = "20dp",
+        layout_width = "fill",
+        layout_height = "wrap",
         {
-            Switch;
-            id = "noiseSwitch";
+            Switch,
+            id = "noiseSwitch",
             text = "Noise Cancellation (On/Off)",
-            layout_width = "fill";
-            layout_marginBottom = "12dp";
-            checked = appSettings.noiseCancellation;
-        };
+            layout_width = "fill",
+            layout_marginBottom = "12dp",
+            checked = appSettings.noiseCancellation,
+        },
         {
-            Switch;
-            id = "monitorSwitch";
+            Switch,
+            id = "monitorSwitch",
             text = "Headphone Audio Monitoring (On/Off)",
-            layout_width = "fill";
-            layout_marginBottom = "12dp";
-            checked = appSettings.headphoneMonitor;
-        };
+            layout_width = "fill",
+            layout_marginBottom = "12dp",
+            checked = appSettings.headphoneMonitor,
+        },
         {
-            TextView;
+            TextView,
             text = "Audio Channel (Studio Mode):",
-            textSize = "13sp";
-            layout_marginBottom = "5dp";
-        };
+            textSize = "13sp",
+            layout_marginBottom = "5dp",
+        },
         {
-            Spinner;
-            id = "channelSpinner";
-            layout_width = "fill";
-            layout_marginBottom = "15dp";
-        };
+            Spinner,
+            id = "channelSpinner",
+            layout_width = "fill",
+            layout_marginBottom = "15dp",
+        },
         {
-            Button;
+            Button,
             text = "Save and Close Settings",
-            textSize = "15sp";
-            layout_width = "fill";
+            textSize = "15sp",
+            layout_width = "fill",
             onClick = function()
                 appSettings.noiseCancellation = setViews.noiseSwitch.isChecked()
                 appSettings.headphoneMonitor = setViews.monitorSwitch.isChecked()
                 print("Settings Saved Successfully!")
                 setDlg.dismiss()
-            end;
-        };
+            end,
+        },
     }
     
     setViews = {}
@@ -324,7 +311,7 @@ function startRecordingProcess()
                 end
             end)
         end
-    }, 150))
+    }), 150)
     
     print("HD Crystal Clear Recording Started!")
 end
@@ -385,23 +372,23 @@ function showPreviewBeforeSaveDialog()
     prevDlg.setTitle("Preview HD Recording")
     
     local prevLayout = {
-        LinearLayout;
-        orientation = "vertical";
-        padding = "25dp";
-        layout_width = "fill";
-        layout_height = "wrap";
+        LinearLayout,
+        orientation = "vertical",
+        padding = "25dp",
+        layout_width = "fill",
+        layout_height = "wrap",
         {
-            TextView;
+            TextView,
             text = "Recording stopped. Listen to the preview below before saving to storage.",
-            textSize = "14sp";
-            layout_marginBottom = "15dp";
-        };
+            textSize = "14sp",
+            layout_marginBottom = "15dp",
+        },
         {
-            Button;
+            Button,
             text = "Play Preview",
-            textSize = "15sp";
-            layout_width = "fill";
-            layout_marginBottom = "10dp";
+            textSize = "15sp",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
             onClick = function()
                 pcall(function()
                     if audioFilePath then
@@ -415,30 +402,30 @@ function showPreviewBeforeSaveDialog()
                         print("Playing preview...")
                     end
                 end)
-            end;
-        };
+            end,
+        },
         {
-            Button;
+            Button,
             text = "Save to Storage (Music Folder)",
-            textSize = "15sp";
-            layout_width = "fill";
-            layout_marginBottom = "10dp";
+            textSize = "15sp",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
             onClick = function()
                 prevDlg.dismiss()
                 saveRecordingDirectly()
-            end;
-        };
+            end,
+        },
         {
-            Button;
+            Button,
             text = "Discard & Close",
-            textSize = "15sp";
-            layout_width = "fill";
+            textSize = "15sp",
+            layout_width = "fill",
             onClick = function()
                 prevDlg.dismiss()
                 print("Recording discarded.")
                 showMainTool()
-            end;
-        };
+            end,
+        },
     }
     prevDlg.setView(loadlayout(prevLayout))
     prevDlg.show()
@@ -487,23 +474,23 @@ function showPostRecordingDialog()
     postDlg.setTitle("Recording Saved")
     
     local postLayout = {
-        LinearLayout;
-        orientation = "vertical";
-        padding = "25dp";
-        layout_width = "fill";
-        layout_height = "wrap";
+        LinearLayout,
+        orientation = "vertical",
+        padding = "25dp",
+        layout_width = "fill",
+        layout_height = "wrap",
         {
-            TextView;
+            TextView,
             text = "HD file saved successfully in your Music folder!\nPath: " .. tostring(savedPublicFilePath),
-            textSize = "14sp";
-            layout_marginBottom = "15dp";
-        };
+            textSize = "14sp",
+            layout_marginBottom = "15dp",
+        },
         {
-            Button;
+            Button,
             text = "Play Saved Audio",
-            textSize = "15sp";
-            layout_width = "fill";
-            layout_marginBottom = "10dp";
+            textSize = "15sp",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
             onClick = function()
                 pcall(function()
                     if savedPublicFilePath then
@@ -517,60 +504,60 @@ function showPostRecordingDialog()
                         print("Playing audio...")
                     end
                 end)
-            end;
-        };
+            end,
+        },
         {
-            Button;
+            Button,
             text = "Close & Exit Tool",
-            textSize = "15sp";
-            layout_width = "fill";
+            textSize = "15sp",
+            layout_width = "fill",
             onClick = function()
                 postDlg.dismiss()
                 pcall(function() activity.finish() end)
-            end;
-        };
+            end,
+        },
     }
     postDlg.setView(loadlayout(postLayout))
     postDlg.show()
 end
 
--- ৯. অ্যাবাউট এন্ড গাইড সেকশন (Check for Update সহ)
+-- ৯. অ্যাবাউট এন্ড গাইড সেকশন (Check for Update সহ v6.2)
 function showAboutDialog()
     local aboutDlg = LuaDialog(activity or service)
     aboutDlg.setTitle("About & Guide")
     
     local aboutLayout = {
-        LinearLayout;
-        orientation = "vertical";
-        padding = "25dp";
-        layout_width = "fill";
-        layout_height = "wrap";
+        LinearLayout,
+        orientation = "vertical",
+        padding = "25dp",
+        layout_width = "fill",
+        layout_height = "wrap",
         {
-            TextView;
-            text = "Tool: New High Quality Voice Recorder 2026\nVersion: 6.0\nDeveloper: Aditya poddar\n\nGuide:\n1. Crystal clear HD audio with permanent Studio & MP3 setup.\n2. Pause button is placed ABOVE, Stop button is BELOW.\n3. Screen reader focus automatically lands on Pause button.",
-            textSize = "14sp";
-            layout_marginBottom = "15dp";
-        };
+            TextView,
+            text = "Tool: New High Quality Voice Recorder 2026\nVersion: 6.2\nDeveloper: Aditya poddar\n\nGuide:\n1. Crystal clear HD audio with permanent Studio & MP3 setup.\n2. Pause button is placed ABOVE, Stop button is BELOW.\n3. Screen reader focus automatically lands on Pause button.",
+            textSize = "14sp",
+            layout_marginBottom = "15dp",
+        },
         {
-            Button;
+            Button,
             text = "Check for Update",
-            textSize = "15sp";
-            layout_width = "fill";
-            layout_height = "wrap";
-            layout_marginBottom = "10dp";
+            textSize = "15sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "10dp",
             onClick = function()
-                print("You are using the latest version (v6.0)!")
-            end;
-        };
+                print("You are using the latest version (v6.2)!")
+            end,
+        },
         {
-            Button;
+            Button,
             text = "Close About",
-            textSize = "15sp";
-            layout_width = "fill";
+            textSize = "15sp",
+            layout_width = "fill",
             onClick = function()
                 aboutDlg.dismiss()
-            end;
-        };
+            end,
+        },
     }
     aboutDlg.setView(loadlayout(aboutLayout))
     aboutDlg.show()
