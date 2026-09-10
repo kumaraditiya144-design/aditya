@@ -40,8 +40,7 @@ local mainDlg = nil
 local views = {}
 
 -- টুল ওপেন হওয়ার সাথে সাথেই ভার্সন নোটিফিকেশন
-print("New High Quality Voice Recorder v7.1 Loaded Successfully!")
-
+7.2
 function showMainTool()
     if mainDlg then
         pcall(function() mainDlg.dismiss() end)
@@ -58,7 +57,7 @@ function showMainTool()
         layout_height = "wrap",
         {
             TextView,
-            text = "Developer: Aditya poddar | v7.1",
+            text = "Developer: Aditya poddar | v7.2",
             textSize = "15sp",
             textColor = 0xFF555555,
             layout_marginBottom = "15dp",
