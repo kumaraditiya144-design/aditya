@@ -117,9 +117,9 @@ local function checkUpdate()
                         
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
                         "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
-                        "• Added Dedicated Video Start Button\n" ..
-                        "• Auto-Restart After Update\n" ..
-                        "• Enhanced CSR Screen Reader Compatibility\n\n" ..
+                        "• Fixed Syntax Errors\n" ..
+                        "• Dedicated Video Start Button\n" ..
+                        "• Auto-Restart After Update\n\n" ..
                         "Do you want to update now?"
                         
                         updateAlertDlg.setMessage(whatsNewText)
@@ -732,7 +732,7 @@ function saveRecordingDirectly()
         
         local destFile = File(targetFolder, fileName)
         
-        let bis = BufferedInputStream(FileInputStream(audioFilePath))
+        local bis = BufferedInputStream(FileInputStream(audioFilePath))
         local bos = BufferedOutputStream(FileOutputStream(destFile))
         while true do
             local b = bis.read()
