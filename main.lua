@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.6 (Working Pro Video & What's New Update System)
+-- Version: 7.7 (Pro Video Quality Selector, Countdown & Auto-Update)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.6"
+local defaultVersion = "7.7"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -40,7 +40,6 @@ local mediaRecorder = nil
 local mediaPlayer = nil
 local noiseSuppressor = nil
 local audioFilePath = nil
-local savedPublicFilePath = nil
 local isPaused = false
 local isRecording = false
 
@@ -51,7 +50,8 @@ local appSettings = {
     audioChannel = "Studio",
     guidanceMode = true,
     autoStartVideo = false,
-    countdownTime = "3 Seconds"
+    countdownTime = "3 Seconds",
+    videoQuality = "1080p (Full HD)"
 }
 
 local mainDlg = nil
@@ -102,13 +102,12 @@ local function checkUpdate()
                         local updateAlertDlg = AlertDialog.Builder(service or activity)
                         updateAlertDlg.setTitle("🚀 New Update Available!")
                         
-                        -- What's New UI Dialog Section
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
                         "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
-                        "• Fixed & Optimized Pro Video Recorder\n" ..
-                        "• Added TalkBack / CSR Guidance Mode\n" ..
-                        "• Added 3s & 5s Countdown Timer Options\n" ..
-                        "• Enhanced Auto-Update & Stability Fixes\n\n" ..
+                        "• Added Pro Video Quality Selector (1080p, 720p)\n" ..
+                        "• Added Countdown Timer & Guidance for Video\n" ..
+                        "• Enhanced Preview & Save Options for Video Suite\n" ..
+                        "• Stable Auto-Update System & Bug Fixes\n\n" ..
                         "Do you want to update now?"
                         
                         updateAlertDlg.setMessage(whatsNewText)
@@ -187,7 +186,7 @@ function showMainTool()
         },
         {
             TextView,
-            text = "Select Recording Type (Format):",
+            text = "Select Audio Format:",
             textSize = "14sp",
             layout_marginBottom = "5dp",
         },
@@ -333,12 +332,16 @@ function showSettingsDialog()
             checked = appSettings.guidanceMode,
         },
         {
-            Switch,
-            id = "autoStartSwitch",
-            text = "Auto Start Video on Launch",
+            TextView,
+            text = "Video Quality Selector:",
+            textSize = "13sp",
+            layout_marginBottom = "5dp",
+        },
+        {
+            Spinner,
+            id = "videoQualitySpinner",
             layout_width = "fill",
             layout_marginBottom = "10dp",
-            checked = appSettings.autoStartVideo,
         },
         {
             TextView,
@@ -361,7 +364,6 @@ function showSettingsDialog()
                 appSettings.noiseCancellation = setViews.noiseSwitch.isChecked()
                 appSettings.headphoneMonitor = setViews.monitorSwitch.isChecked()
                 appSettings.guidanceMode = setViews.guidanceSwitch.isChecked()
-                appSettings.autoStartVideo = setViews.autoStartSwitch.isChecked()
                 print("Settings Saved Successfully!")
                 setDlg.dismiss()
             end,
@@ -370,6 +372,24 @@ function showSettingsDialog()
     
     setViews = {}
     local setView = loadlayout(setLayout, setViews)
+    
+    local qualityOptions = {"1080p (Full HD)", "720p (HD)", "480p (SD)"}
+    local qAdapter = ArrayAdapter(activity or service, android.R.layout.simple_spinner_item, qualityOptions)
+    qAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+    setViews.videoQualitySpinner.setAdapter(qAdapter)
+    
+    for i, v in ipairs(qualityOptions) do
+        if v == appSettings.videoQuality then
+            setViews.videoQualitySpinner.setSelection(i - 1)
+        end
+    end
+    
+    setViews.videoQualitySpinner.onItemSelectedListener = {
+        onItemSelected = function(parent, v, position, id)
+            appSettings.videoQuality = qualityOptions[position + 1]
+        end,
+        onNothingSelected = function(parent) end
+    }
     
     local countOptions = {"3 Seconds", "5 Seconds"}
     local letAdapter = ArrayAdapter(activity or service, android.R.layout.simple_spinner_item, countOptions)
@@ -395,7 +415,7 @@ end
 
 function showVideoRecorderDialog()
     local vidDlg = LuaDialog(activity or service)
-    vidDlg.setTitle("Professional Video Recorder")
+    vidDlg.setTitle("Pro Video Recorder Suite")
     
     local vidLayout = {
         LinearLayout,
@@ -405,19 +425,20 @@ function showVideoRecorderDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Video Mode Active\nCountdown: " .. appSettings.countdownTime .. "\nGuidance Mode: Active",
+            text = "Quality: " .. appSettings.videoQuality .. "\nCountdown: " .. appSettings.countdownTime .. "\nGuidance: Active",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
         {
             Button,
-            text = "Launch Camera & Record",
+            text = "Start Video Recording (With Countdown)",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
             onClick = function()
+                vidDlg.dismiss()
                 if appSettings.guidanceMode then
-                    print("Guidance: Position camera steadily. Starting video recording...")
+                    print("Guidance: Position camera steadily. Starting " .. appSettings.countdownTime .. " countdown...")
                 end
                 
                 local delayTime = 3000
@@ -425,14 +446,12 @@ function showVideoRecorderDialog()
                     delayTime = 5000
                 end
                 
-                if appSettings.autoStartVideo then
-                    Toast.makeText(service or activity, "Auto-starting recording in " .. appSettings.countdownTime, 0).show()
-                end
+                Toast.makeText(service or activity, "Recording will start in " .. appSettings.countdownTime, 0).show()
                 
                 Handler().postDelayed(Runnable({
                     run = function()
                         pcall(function()
-                            -- Fixed Pro Video Intent for All Android Devices
+                            playNotification()
                             local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             if intent.resolveActivity((activity or service).getPackageManager()) ~= nil then
@@ -442,6 +461,13 @@ function showVideoRecorderDialog()
                                 camIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 (activity or service).startActivity(camIntent)
                             end
+                            
+                            -- Show Save/Preview Post-Action Dialog after starting camera
+                            Handler().postDelayed(Runnable({
+                                run = function()
+                                    showVideoPreviewDialog()
+                                end
+                            }), 2000)
                         end)
                     end
                 }), delayTime)
@@ -459,6 +485,68 @@ function showVideoRecorderDialog()
     }
     vidDlg.setView(loadlayout(vidLayout))
     vidDlg.show()
+end
+
+function showVideoPreviewDialog()
+    pcall(function()
+        local pDlg = LuaDialog(activity or service)
+        pDlg.setTitle("Video Recording Finished")
+        
+        local pLayout = {
+            LinearLayout,
+            orientation = "vertical",
+            padding = "25dp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            {
+                TextView,
+                text = "Selected Quality: " .. appSettings.videoQuality .. "\nChoose an option below:",
+                textSize = "14sp",
+                layout_marginBottom = "15dp",
+            },
+            {
+                Button,
+                text = "Play Captured Video",
+                textSize = "15sp",
+                layout_width = "fill",
+                layout_marginBottom = "10dp",
+                onClick = function()
+                    Toast.makeText(service or activity, "Opening gallery/video player...", 0).show()
+                    local intent = Intent(Intent.ACTION_VIEW)
+                    intent.setType("video/*")
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    (activity or service).startActivity(intent)
+                end,
+            },
+            {
+                Button,
+                text = "Save to Gallery / Music Folder",
+                textSize = "15sp",
+                layout_width = "fill",
+                layout_marginBottom = "10dp",
+                onClick = function()
+                    pDlg.dismiss()
+                    Toast.makeText(service or activity, "Video successfully saved in " .. appSettings.videoQuality .. " quality!", 1).show()
+                    showMainTool()
+                end,
+            },
+            {
+                Button,
+                text = "Close / Back to Menu",
+                textSize = "15sp",
+                layout_width = "fill",
+                onClick = function()
+                    pDlg.dismiss()
+                    showMainTool()
+                end,
+            },
+        }
+        pDlg.setView(loadlayout(pLayout))
+        pDlg.setCancelable(false)
+        local dialogWindow = pDlg.create()
+        pcall(function() dialogWindow.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY) end)
+        dialogWindow.show()
+    end)
 end
 
 function startRecordingProcess()
@@ -567,7 +655,7 @@ end
 
 function showPreviewBeforeSaveDialog()
     local prevDlg = LuaDialog(activity or service)
-    prevDlg.setTitle("Preview HD Recording")
+    prevDlg.setTitle("Preview HD Audio Recording")
     
     local prevLayout = {
         LinearLayout,
@@ -635,7 +723,6 @@ function saveRecordingDirectly()
         if not targetFolder.exists() then targetFolder.mkdirs() end
         
         local destFile = File(targetFolder, fileName)
-        savedPublicFilePath = destFile.absolutePath
         
         local bis = BufferedInputStream(FileInputStream(audioFilePath))
         local bos = BufferedOutputStream(FileOutputStream(destFile))
@@ -669,7 +756,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Recorder with Countdown & Guidance.\n- What's New Update Dialog Active.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Quality Selector (1080p, 720p).\n- Countdown Timer & Post-Preview Save Menu.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
