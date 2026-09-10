@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.8 (Welcome Sound Added & Optimized CSR Suite)
+-- Version: 7.9 (Bug Fixed & Fully Optimized for CSR)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.8"
+local defaultVersion = "7.9"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -103,9 +103,8 @@ local function checkUpdate()
                         
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
                         "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
-                        "• Added Welcome Sound on Tool Launch\n" ..
-                        "• Optimized Video & Audio Recorder Suite\n" ..
-                        "• Improved CSR Accessibility Guidance\n" ..
+                        "• Fixed Lua Syntax Error & Exceptions\n" ..
+                        "• Optimized Welcome Sound & Video Suite\n" ..
                         "• Stable Auto-Update System\n\n" ..
                         "Do you want to update now?"
                         
@@ -162,7 +161,6 @@ pcall(function()
 end)
 
 function showMainTool()
-    -- Play Welcome Sound when tool starts
     playNotification()
 
     if mainDlg then
@@ -440,24 +438,19 @@ function showVideoRecorderDialog()
             onClick = function()
                 vidDlg.dismiss()
                 if appSettings.guidanceMode then
-                    print("Guidance: Opening stock camera app directly for stable recording.")
+                    print("Guidance: Opening camera app for stable recording.")
                 end
                 
                 pcall(function()
                     playNotification()
                     local intent = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    try 
-                        (activity or service).startActivity(intent)
-                    catch Exception => e
-                        local fallbackIntent = Intent(Intent.ACTION_MAIN)
-                        fallbackIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-                        fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        (activity or service).startActivity(fallbackIntent)
+                    local ctx = activity or service
+                    if ctx then
+                        pcall(function() ctx.startActivity(intent) end)
                     end
                 end)
                 
-                -- Show Post-Action Dialog
                 Handler().postDelayed(Runnable({
                     run = function()
                         showVideoPreviewDialog()
@@ -695,7 +688,7 @@ function showPreviewBeforeSaveDialog()
             Button,
             text = "Discard & Close",
             textSize = "15sp",
-            layout_width_width = "fill",
+            layout_width = "fill",
             onClick = function()
                 prevDlg.dismiss()
                 showMainTool()
@@ -748,7 +741,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Welcome Sound on Launch.\n- Direct Camera Launcher & Quality Configuration.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Welcome Sound on Launch.\n- Fixed Syntax & Optimized Recorder.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
