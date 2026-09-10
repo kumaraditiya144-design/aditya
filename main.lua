@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.4 (Auto-Update Fixed)
+-- Version: 7.5 (Stable Auto-Update & CSR Optimized)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.3"
+local defaultVersion = "7.5"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -48,7 +48,10 @@ local appSettings = {
     noiseCancellation = true,
     headphoneMonitor = true,
     selectedFormat = "MP3",
-    audioChannel = "Studio"
+    audioChannel = "Studio",
+    guidanceMode = true,
+    autoStartVideo = false,
+    countdownTime = "3 Seconds"
 }
 
 local mainDlg = nil
@@ -97,8 +100,17 @@ local function checkUpdate()
                     pcall(function()
                         playNotification()
                         local updateAlertDlg = AlertDialog.Builder(service or activity)
-                        updateAlertDlg.setTitle("Update Available")
-                        updateAlertDlg.setMessage("New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. "\n\nDo you want to update now?")
+                        updateAlertDlg.setTitle("🚀 New Update Available!")
+                        
+                        local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
+                        "\n\n✨ What's New in this version:\n" ..
+                        "• Added Professional Video Recorder\n" ..
+                        "• Added TalkBack/CSR Guidance Mode\n" ..
+                        "• Added 3s & 5s Countdown Timer\n" ..
+                        "• Bug fixes & performance improvements\n\n" ..
+                        "Do you want to update now?"
+                        
+                        updateAlertDlg.setMessage(whatsNewText)
                         updateAlertDlg.setPositiveButton("Update Now", {onClick=function(v)
                             v.dismiss()
                             Toast.makeText(service or activity, "Downloading update...", 0).show()
@@ -187,7 +199,7 @@ function showMainTool()
         },
         {
             Button,
-            text = "Settings",
+            text = "Settings & Guidance",
             textSize = "16sp",
             layout_width = "fill",
             layout_height = "wrap",
@@ -227,7 +239,7 @@ function showMainTool()
         },
         {
             Button,
-            text = "Video Recorder Suite",
+            text = "Professional Video Recorder",
             textSize = "16sp",
             layout_width = "fill",
             layout_height = "wrap",
@@ -287,7 +299,7 @@ end
 
 function showSettingsDialog()
     local setDlg = LuaDialog(activity or service)
-    setDlg.setTitle("Settings")
+    setDlg.setTitle("Settings & Guidance Options")
     
     local setLayout = {
         LinearLayout,
@@ -298,39 +310,57 @@ function showSettingsDialog()
         {
             Switch,
             id = "noiseSwitch",
-            text = "Noise Cancellation (On/Off)",
+            text = "Noise Cancellation",
             layout_width = "fill",
-            layout_marginBottom = "12dp",
+            layout_marginBottom = "10dp",
             checked = appSettings.noiseCancellation,
         },
         {
             Switch,
             id = "monitorSwitch",
-            text = "Headphone Audio Monitoring (On/Off)",
+            text = "Headphone Monitoring",
             layout_width = "fill",
-            layout_marginBottom = "12dp",
+            layout_marginBottom = "10dp",
             checked = appSettings.headphoneMonitor,
         },
         {
+            Switch,
+            id = "guidanceSwitch",
+            text = "TalkBack/CSR Guidance Mode",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
+            checked = appSettings.guidanceMode,
+        },
+        {
+            Switch,
+            id = "autoStartSwitch",
+            text = "Auto Start Video on Launch",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
+            checked = appSettings.autoStartVideo,
+        },
+        {
             TextView,
-            text = "Audio Channel (Studio Mode):",
+            text = "Countdown Timer (Video Capture):",
             textSize = "13sp",
             layout_marginBottom = "5dp",
         },
         {
             Spinner,
-            id = "channelSpinner",
+            id = "countdownSpinner",
             layout_width = "fill",
             layout_marginBottom = "15dp",
         },
         {
             Button,
-            text = "Save and Close Settings",
+            text = "Save Settings",
             textSize = "15sp",
             layout_width = "fill",
             onClick = function()
                 appSettings.noiseCancellation = setViews.noiseSwitch.isChecked()
                 appSettings.headphoneMonitor = setViews.monitorSwitch.isChecked()
+                appSettings.guidanceMode = setViews.guidanceSwitch.isChecked()
+                appSettings.autoStartVideo = setViews.autoStartSwitch.isChecked()
                 print("Settings Saved Successfully!")
                 setDlg.dismiss()
             end,
@@ -340,20 +370,20 @@ function showSettingsDialog()
     setViews = {}
     local setView = loadlayout(setLayout, setViews)
     
-    local channels = {"Studio", "Mono"}
-    local chanAdapter = ArrayAdapter(activity or service, android.R.layout.simple_spinner_item, channels)
-    chanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-    setViews.channelSpinner.setAdapter(chanAdapter)
+    local countOptions = {"3 Seconds", "5 Seconds"}
+    local letAdapter = ArrayAdapter(activity or service, android.R.layout.simple_spinner_item, countOptions)
+    letAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+    setViews.countdownSpinner.setAdapter(letAdapter)
     
-    for i, v in ipairs(channels) do
-        if v == appSettings.audioChannel then
-            setViews.channelSpinner.setSelection(i - 1)
+    for i, v in ipairs(countOptions) do
+        if v == appSettings.countdownTime then
+            setViews.countdownSpinner.setSelection(i - 1)
         end
     end
     
-    setViews.channelSpinner.onItemSelectedListener = {
+    setViews.countdownSpinner.onItemSelectedListener = {
         onItemSelected = function(parent, v, position, id)
-            appSettings.audioChannel = channels[position + 1]
+            appSettings.countdownTime = countOptions[position + 1]
         end,
         onNothingSelected = function(parent) end
     }
@@ -364,7 +394,7 @@ end
 
 function showVideoRecorderDialog()
     local vidDlg = LuaDialog(activity or service)
-    vidDlg.setTitle("Video Recorder Suite")
+    vidDlg.setTitle("Professional Video Recorder")
     
     local vidLayout = {
         LinearLayout,
@@ -374,26 +404,42 @@ function showVideoRecorderDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Guide:\n1. Click the button below to open the system camera for video recording.\n2. Ensure proper lighting and audio stability before capturing.",
+            text = "Video Mode Active\nCountdown: " .. appSettings.countdownTime .. "\nGuidance Mode: Active",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
         {
             Button,
-            text = "Start Video Recording",
+            text = "Launch Camera & Record",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
             onClick = function()
-                print("Guide: Position your camera steadily.")
-                pcall(function()
-                    local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
-                    if intent.resolveActivity(activity.getPackageManager()) ~= nil then
-                        activity.startActivity(intent)
-                    else
-                        activity.startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA))
+                if appSettings.guidanceMode then
+                    print("Guidance: Position camera steadily. Starting after countdown.")
+                end
+                
+                local delayTime = 3000
+                if appSettings.countdownTime == "5 Seconds" then
+                    delayTime = 5000
+                end
+                
+                if appSettings.autoStartVideo then
+                    Toast.makeText(service or activity, "Auto-starting recording in " .. appSettings.countdownTime, 0).show()
+                end
+                
+                Handler().postDelayed(Runnable({
+                    run = function()
+                        pcall(function()
+                            local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
+                            if intent.resolveActivity(activity.getPackageManager()) ~= nil then
+                                activity.startActivity(intent)
+                            else
+                                activity.startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA))
+                            end
+                        end)
                     end
-                end)
+                }), delayTime)
             end,
         },
         {
@@ -463,7 +509,11 @@ function startRecordingProcess()
         views.startStopBtn.setText("Stop Recording")
     end
     
-    print("Recording Started!")
+    if appSettings.guidanceMode then
+        print("Guidance: Audio recording started successfully.")
+    else
+        print("Recording Started!")
+    end
 end
 
 function togglePauseResume()
@@ -522,7 +572,7 @@ function showPreviewBeforeSaveDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Recording stopped. Listen to the preview below before saving.",
+            text = "Recording stopped. Listen to preview or save.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
@@ -547,7 +597,7 @@ function showPreviewBeforeSaveDialog()
         },
         {
             Button,
-            text = "Save to Storage (Music Folder)",
+            text = "Save to Music Folder",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
@@ -614,7 +664,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nAuto-update system is active.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Recorder, Guidance & Countdown.\n- Stable Auto-Update System with What's New.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
