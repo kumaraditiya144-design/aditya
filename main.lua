@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.5 (Stable Auto-Update & CSR Optimized)
+-- Version: 7.6 (Working Pro Video & What's New Update System)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.5"
+local defaultVersion = "7.6"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -102,12 +102,13 @@ local function checkUpdate()
                         local updateAlertDlg = AlertDialog.Builder(service or activity)
                         updateAlertDlg.setTitle("🚀 New Update Available!")
                         
+                        -- What's New UI Dialog Section
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
-                        "\n\n✨ What's New in this version:\n" ..
-                        "• Added Professional Video Recorder\n" ..
-                        "• Added TalkBack/CSR Guidance Mode\n" ..
-                        "• Added 3s & 5s Countdown Timer\n" ..
-                        "• Bug fixes & performance improvements\n\n" ..
+                        "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
+                        "• Fixed & Optimized Pro Video Recorder\n" ..
+                        "• Added TalkBack / CSR Guidance Mode\n" ..
+                        "• Added 3s & 5s Countdown Timer Options\n" ..
+                        "• Enhanced Auto-Update & Stability Fixes\n\n" ..
                         "Do you want to update now?"
                         
                         updateAlertDlg.setMessage(whatsNewText)
@@ -416,7 +417,7 @@ function showVideoRecorderDialog()
             layout_marginBottom = "10dp",
             onClick = function()
                 if appSettings.guidanceMode then
-                    print("Guidance: Position camera steadily. Starting after countdown.")
+                    print("Guidance: Position camera steadily. Starting video recording...")
                 end
                 
                 local delayTime = 3000
@@ -431,11 +432,15 @@ function showVideoRecorderDialog()
                 Handler().postDelayed(Runnable({
                     run = function()
                         pcall(function()
+                            -- Fixed Pro Video Intent for All Android Devices
                             local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
-                            if intent.resolveActivity(activity.getPackageManager()) ~= nil then
-                                activity.startActivity(intent)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if intent.resolveActivity((activity or service).getPackageManager()) ~= nil then
+                                (activity or service).startActivity(intent)
                             else
-                                activity.startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA))
+                                local camIntent = Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA)
+                                camIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                (activity or service).startActivity(camIntent)
                             end
                         end)
                     end
@@ -664,7 +669,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Recorder, Guidance & Countdown.\n- Stable Auto-Update System with What's New.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Recorder with Countdown & Guidance.\n- What's New Update Dialog Active.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
