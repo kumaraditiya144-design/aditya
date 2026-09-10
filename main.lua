@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.7 (Pro Video Quality Selector, Countdown & Auto-Update)
+-- Version: 7.8 (Welcome Sound Added & Optimized CSR Suite)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.7"
+local defaultVersion = "7.8"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -49,7 +49,6 @@ local appSettings = {
     selectedFormat = "MP3",
     audioChannel = "Studio",
     guidanceMode = true,
-    autoStartVideo = false,
     countdownTime = "3 Seconds",
     videoQuality = "1080p (Full HD)"
 }
@@ -60,7 +59,7 @@ local views = {}
 local function playNotification()
     pcall(function()
         local tone = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
-        tone.startTone(ToneGenerator.TONE_PROP_ACK, 100)
+        tone.startTone(ToneGenerator.TONE_PROP_ACK, 150)
         local vibrator = (service or activity).getSystemService(Context.VIBRATOR_SERVICE)
         if vibrator then
             if Build.VERSION.SDK_INT >= 26 then
@@ -104,10 +103,10 @@ local function checkUpdate()
                         
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
                         "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
-                        "• Added Pro Video Quality Selector (1080p, 720p)\n" ..
-                        "• Added Countdown Timer & Guidance for Video\n" ..
-                        "• Enhanced Preview & Save Options for Video Suite\n" ..
-                        "• Stable Auto-Update System & Bug Fixes\n\n" ..
+                        "• Added Welcome Sound on Tool Launch\n" ..
+                        "• Optimized Video & Audio Recorder Suite\n" ..
+                        "• Improved CSR Accessibility Guidance\n" ..
+                        "• Stable Auto-Update System\n\n" ..
                         "Do you want to update now?"
                         
                         updateAlertDlg.setMessage(whatsNewText)
@@ -163,6 +162,9 @@ pcall(function()
 end)
 
 function showMainTool()
+    -- Play Welcome Sound when tool starts
+    playNotification()
+
     if mainDlg then
         pcall(function() mainDlg.dismiss() end)
     end
@@ -431,46 +433,36 @@ function showVideoRecorderDialog()
         },
         {
             Button,
-            text = "Start Video Recording (With Countdown)",
+            text = "Launch Direct Camera App",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
             onClick = function()
                 vidDlg.dismiss()
                 if appSettings.guidanceMode then
-                    print("Guidance: Position camera steadily. Starting " .. appSettings.countdownTime .. " countdown...")
+                    print("Guidance: Opening stock camera app directly for stable recording.")
                 end
                 
-                local delayTime = 3000
-                if appSettings.countdownTime == "5 Seconds" then
-                    delayTime = 5000
-                end
+                pcall(function()
+                    playNotification()
+                    local intent = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try 
+                        (activity or service).startActivity(intent)
+                    catch Exception => e
+                        local fallbackIntent = Intent(Intent.ACTION_MAIN)
+                        fallbackIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+                        fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        (activity or service).startActivity(fallbackIntent)
+                    end
+                end)
                 
-                Toast.makeText(service or activity, "Recording will start in " .. appSettings.countdownTime, 0).show()
-                
+                -- Show Post-Action Dialog
                 Handler().postDelayed(Runnable({
                     run = function()
-                        pcall(function()
-                            playNotification()
-                            local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if intent.resolveActivity((activity or service).getPackageManager()) ~= nil then
-                                (activity or service).startActivity(intent)
-                            else
-                                local camIntent = Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA)
-                                camIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                (activity or service).startActivity(camIntent)
-                            end
-                            
-                            -- Show Save/Preview Post-Action Dialog after starting camera
-                            Handler().postDelayed(Runnable({
-                                run = function()
-                                    showVideoPreviewDialog()
-                                end
-                            }), 2000)
-                        end)
+                        showVideoPreviewDialog()
                     end
-                }), delayTime)
+                }), 1500)
             end,
         },
         {
@@ -490,7 +482,7 @@ end
 function showVideoPreviewDialog()
     pcall(function()
         local pDlg = LuaDialog(activity or service)
-        pDlg.setTitle("Video Recording Finished")
+        pDlg.setTitle("Video Recording Manager")
         
         local pLayout = {
             LinearLayout,
@@ -500,18 +492,18 @@ function showVideoPreviewDialog()
             layout_height = "wrap",
             {
                 TextView,
-                text = "Selected Quality: " .. appSettings.videoQuality .. "\nChoose an option below:",
+                text = "Target Quality: " .. appSettings.videoQuality .. "\nChoose an action below:",
                 textSize = "14sp",
                 layout_marginBottom = "15dp",
             },
             {
                 Button,
-                text = "Play Captured Video",
+                text = "Open Gallery / View Videos",
                 textSize = "15sp",
                 layout_width = "fill",
                 layout_marginBottom = "10dp",
                 onClick = function()
-                    Toast.makeText(service or activity, "Opening gallery/video player...", 0).show()
+                    Toast.makeText(service or activity, "Opening gallery...", 0).show()
                     local intent = Intent(Intent.ACTION_VIEW)
                     intent.setType("video/*")
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -520,19 +512,19 @@ function showVideoPreviewDialog()
             },
             {
                 Button,
-                text = "Save to Gallery / Music Folder",
+                text = "Confirm & Save Settings (" .. appSettings.videoQuality .. ")",
                 textSize = "15sp",
                 layout_width = "fill",
                 layout_marginBottom = "10dp",
                 onClick = function()
                     pDlg.dismiss()
-                    Toast.makeText(service or activity, "Video successfully saved in " .. appSettings.videoQuality .. " quality!", 1).show()
+                    Toast.makeText(service or activity, "Video configuration saved successfully!", 1).show()
                     showMainTool()
                 end,
             },
             {
                 Button,
-                text = "Close / Back to Menu",
+                text = "Back to Menu",
                 textSize = "15sp",
                 layout_width = "fill",
                 onClick = function()
@@ -703,7 +695,7 @@ function showPreviewBeforeSaveDialog()
             Button,
             text = "Discard & Close",
             textSize = "15sp",
-            layout_width = "fill",
+            layout_width_width = "fill",
             onClick = function()
                 prevDlg.dismiss()
                 showMainTool()
@@ -756,7 +748,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Pro Video Quality Selector (1080p, 720p).\n- Countdown Timer & Post-Preview Save Menu.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Welcome Sound on Launch.\n- Direct Camera Launcher & Quality Configuration.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
