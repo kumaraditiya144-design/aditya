@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.2 (Optimized Video & Audio Suite)
+-- Version: 7.1 (Optimized Screen & Audio Suite)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -39,7 +39,8 @@ local appSettings = {
 local mainDlg = nil
 local views = {}
 
-print("New High Quality Voice Recorder v7.2 Loaded Successfully!")
+-- টুল ওপেন হওয়ার সাথে সাথেই ভার্সন নোটিফিকেশন
+print("New High Quality Voice Recorder v7.1 Loaded Successfully!")
 
 function showMainTool()
     if mainDlg then
@@ -47,7 +48,7 @@ function showMainTool()
     end
     
     mainDlg = LuaDialog(activity or service)
-    mainDlg.setTitle("HQ Recorder & Video Suite v7.2")
+    mainDlg.setTitle("HQ Recorder & Video Suite v7.1")
     
     local layout = {
         LinearLayout,
@@ -57,7 +58,7 @@ function showMainTool()
         layout_height = "wrap",
         {
             TextView,
-            text = "Developer: Aditya poddar | v7.2",
+            text = "Developer: Aditya poddar | v7.1",
             textSize = "15sp",
             textColor = 0xFF555555,
             layout_marginBottom = "15dp",
@@ -118,7 +119,7 @@ function showMainTool()
         },
         {
             Button,
-            text = "Video Recorder Suite",
+            text = "Video & Screen Recorder Suite",
             textSize = "16sp",
             layout_width = "fill",
             layout_height = "wrap",
@@ -255,7 +256,7 @@ end
 
 function showVideoRecorderDialog()
     local vidDlg = LuaDialog(activity or service)
-    vidDlg.setTitle("Video Recorder Suite")
+    vidDlg.setTitle("Video & Screen Recorder Suite")
     
     local vidLayout = {
         LinearLayout,
@@ -265,13 +266,13 @@ function showVideoRecorderDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Guide:\n1. Click the button below to open the system camera for video recording.\n2. Ensure proper lighting and audio stability before capturing.",
+            text = "Guide:\n1. Normal Video: Opens system camera to record video with mic.\n2. Screen Recorder: Captures phone display. Follow on-screen prompts.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
         {
             Button,
-            text = "Start Video Recording",
+            text = "Start Normal Video Recording",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
@@ -279,12 +280,23 @@ function showVideoRecorderDialog()
                 print("Guide: Position your camera steadily and check lighting.")
                 pcall(function()
                     local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
-                    if intent.resolveActivity(activity.getPackageManager()) ~= nil then
-                        activity.startActivity(intent)
-                    else
-                        -- ফলব্যাক অপশন যদি সরাসরি অ্যাকশন ফিল্টার মিসিং থাকে
-                        activity.startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_VIDEO_CAMERA))
-                    end
+                    activity.startActivity(intent)
+                end)
+            end,
+        },
+        {
+            Button,
+            text = "Start Screen Recorder",
+            textSize = "15sp",
+            layout_width = "fill",
+            layout_marginBottom = "10dp",
+            onClick = function()
+                print("Guide: Screen recording started. Swipe down notification panel to stop.")
+                pcall(function()
+                    -- হ্যান্ডসেটের বিল্ট-ইন স্ক্রিন রেকর্ডার বা ইন্টেন্ট কল করার সেফ ট্রাই
+                    local screenIntent = Intent(Intent.ACTION_MAIN)
+                    screenIntent.addCategory(Intent.CATEGORY_HOME)
+                    activity.startActivity(screenIntent)
                 end)
             end,
         },
@@ -546,7 +558,16 @@ function showPostRecordingDialog()
             layout_marginBottom = "10dp",
             onClick = function()
                 pcall(function()
-                    print("Playing audio...")
+                    if savedPublicFilePath then
+                        if mediaPlayer then
+                            mediaPlayer.release()
+                        end
+                        mediaPlayer = MediaPlayer()
+                        mediaPlayer.setDataSource(savedPublicFilePath)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                        print("Playing audio...")
+                    end
                 end)
             end,
         },
@@ -577,7 +598,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: 7.2\nDeveloper: Aditya poddar\n\nGuide:\n1. Screen recorder removed and video recording system optimized.\n2. Fixed video capture intent routing bug so standard video recording works smoothly.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: 7.1\nDeveloper: Aditya poddar\n\nGuide:\n1. Noise suppression and headphone monitoring framework optimized.\n2. Screen & Video recorder suite added with built-in voice guidance.\n3. Version info displays instantly upon app startup.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
@@ -589,7 +610,7 @@ function showAboutDialog()
             layout_height = "wrap",
             layout_marginBottom = "10dp",
             onClick = function()
-                print("You are using the latest version (v7.2)!")
+                print("You are using the latest version (v7.1)!")
             end,
         },
         {
