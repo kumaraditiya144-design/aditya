@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: New High Quality Voice & Video Recorder 2026
--- Version: 7.9 (Bug Fixed & Fully Optimized for CSR)
+-- Version: 8.0 (Dedicated Video Record Button & Auto-Restart Update)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -31,7 +31,7 @@ import "java.io.BufferedOutputStream"
 
 local updateURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/verson.txt"
 local downloadURL = "https://raw.githubusercontent.com/kumaraditiya144-design/aditya/main/main.lua"
-local defaultVersion = "7.9"
+local defaultVersion = "8.0"
 local currentDir = "/storage/emulated/0/解说/Tools/high quality voice recorder 2026"
 local mainPath = currentDir .. "/main.lua"
 local versionPath = currentDir .. "/version.txt"
@@ -86,6 +86,20 @@ local function getCurrentVersion()
     return defaultVersion
 end
 
+local function restartTool()
+    pcall(function()
+        if mainDlg then mainDlg.dismiss() end
+        local context = activity or service
+        if context then
+            local intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName())
+            if intent then
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                context.startActivity(intent)
+            end
+        end
+    end)
+end
+
 local function checkUpdate()
     local currentVersion = getCurrentVersion()
     local url = updateURL .. "?v=" .. os.time()
@@ -103,15 +117,15 @@ local function checkUpdate()
                         
                         local whatsNewText = "New Version: " .. onlineVersion .. "\nCurrent Version: " .. currentVersion .. 
                         "\n\n✨ What's New in v" .. onlineVersion .. ":\n" ..
-                        "• Fixed Lua Syntax Error & Exceptions\n" ..
-                        "• Optimized Welcome Sound & Video Suite\n" ..
-                        "• Stable Auto-Update System\n\n" ..
+                        "• Added Dedicated Video Start Button\n" ..
+                        "• Auto-Restart After Update\n" ..
+                        "• Enhanced CSR Screen Reader Compatibility\n\n" ..
                         "Do you want to update now?"
                         
                         updateAlertDlg.setMessage(whatsNewText)
                         updateAlertDlg.setPositiveButton("Update Now", {onClick=function(v)
                             v.dismiss()
-                            Toast.makeText(service or activity, "Downloading update...", 0).show()
+                            Toast.makeText(service or activity, "Downloading & Installing...", 0).show()
                             
                             Http.get(downloadURL, function(c, content)
                                 if c == 200 and content then
@@ -127,14 +141,12 @@ local function checkUpdate()
                                         vf:close() 
                                     end
                                     
-                                    local successDialog = AlertDialog.Builder(service or activity)
-                                    successDialog.setTitle("Update Successful")
-                                    successDialog.setMessage("Successfully updated to version " .. onlineVersion .. ".\n\nPlease restart the plugin.")
-                                    successDialog.setPositiveButton("OK", {onClick=function(v2) v2.dismiss() end})
-                                    local d2 = successDialog.create()
-                                    pcall(function() d2.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY) end)
-                                    d2.setCancelable(false)
-                                    d2.show()
+                                    Toast.makeText(service or activity, "Updated successfully! Restarting...", 1).show()
+                                    Handler().postDelayed(Runnable({
+                                        run = function()
+                                            restartTool()
+                                        end
+                                    }, 1000))
                                 else
                                     Toast.makeText(service or activity, "Failed to download update file", 0).show()
                                 end
@@ -431,31 +443,42 @@ function showVideoRecorderDialog()
         },
         {
             Button,
-            text = "Launch Direct Camera App",
+            text = "🎬 Start Video Recording (Dedicated)",
             textSize = "15sp",
             layout_width = "fill",
             layout_marginBottom = "10dp",
             onClick = function()
                 vidDlg.dismiss()
                 if appSettings.guidanceMode then
-                    print("Guidance: Opening camera app for stable recording.")
+                    print("Guidance: Starting " .. appSettings.countdownTime .. " countdown for video recording...")
                 end
                 
-                pcall(function()
-                    playNotification()
-                    local intent = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    local ctx = activity or service
-                    if ctx then
-                        pcall(function() ctx.startActivity(intent) end)
-                    end
-                end)
+                local delayTime = 3000
+                if appSettings.countdownTime == "5 Seconds" then
+                    delayTime = 5000
+                end
+                
+                Toast.makeText(service or activity, "Recording will start in " .. appSettings.countdownTime, 0).show()
                 
                 Handler().postDelayed(Runnable({
                     run = function()
-                        showVideoPreviewDialog()
+                        pcall(function()
+                            playNotification()
+                            local intent = Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            local ctx = activity or service
+                            if ctx then
+                                pcall(function() ctx.startActivity(intent) end)
+                            end
+                        end)
+                        
+                        Handler().postDelayed(Runnable({
+                            run = function()
+                                showVideoPreviewDialog()
+                            end
+                        }, 2000))
                     end
-                }), 1500)
+                }, delayTime))
             end,
         },
         {
@@ -709,7 +732,7 @@ function saveRecordingDirectly()
         
         local destFile = File(targetFolder, fileName)
         
-        local bis = BufferedInputStream(FileInputStream(audioFilePath))
+        let bis = BufferedInputStream(FileInputStream(audioFilePath))
         local bos = BufferedOutputStream(FileOutputStream(destFile))
         while true do
             local b = bis.read()
@@ -741,7 +764,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Welcome Sound on Launch.\n- Fixed Syntax & Optimized Recorder.",
+            text = "Tool: HQ Recorder & Video Suite\nVersion: " .. getCurrentVersion() .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Dedicated Video Start Button.\n- Auto-Restart Update Feature.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
