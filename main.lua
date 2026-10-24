@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: Simple Audio Recorder Pro
--- Version: 9.1 (Simple Audio Recorder with Multi-Language & Navigation)
+-- Version: 8.2 (Background Recording & Direct Navigation Drawer Open)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -29,7 +29,7 @@ import "java.io.FileOutputStream"
 import "java.io.BufferedInputStream"
 import "java.io.BufferedOutputStream"
 
-local currentVersion = "8.1"
+local currentVersion = ".92"
 local mediaRecorder = nil
 local mediaPlayer = nil
 local noiseSuppressor = nil
@@ -52,14 +52,14 @@ local translations = {
         title = "Simple Audio Recorder",
         dev = "Developer: Aditya poddar | v",
         formatLabel = "Select Audio Format:",
-        settingsBtn = "Settings & Navigation",
+        settingsBtn = "Open Navigation Drawer",
         startBtn = "Start Audio Recording",
         stopBtn = "Stop Audio Recording",
         pauseBtn = "Pause Recording",
         resumeBtn = "Resume Recording",
         aboutBtn = "About",
         exitBtn = "Exit & Close",
-        settingsTitle = "Settings & Navigation",
+        settingsTitle = "Open Navigation Drawer",
         noiseText = "Noise Cancellation",
         monitorText = "Headphone Monitoring",
         guidanceText = "TalkBack/CSR Guidance Mode",
@@ -74,14 +74,14 @@ local translations = {
         title = "সিম্পল অডিও রেকর্ডার",
         dev = "ডেভেলপার: আদিত্য পোদ্দার | v",
         formatLabel = "অডিও ফরম্যাট নির্বাচন করুন:",
-        settingsBtn = "সেটিংস ও নেভিগেশন",
+        settingsBtn = "Open Navigation Drawer",
         startBtn = "অডিও রেকর্ডিং শুরু করুন",
         stopBtn = "অডিও রেকর্ডিং বন্ধ করুন",
         pauseBtn = "রেকর্ডিং pausa করুন",
         resumeBtn = "রেকর্ডিং চালু রাখুন",
         aboutBtn = "সম্পর্কে",
         exitBtn = "প্রস্থান ও বন্ধ করুন",
-        settingsTitle = "সেটিংস ও নেভিগেশন",
+        settingsTitle = "Open Navigation Drawer",
         noiseText = "নয়েজ ক্যান্সেলেশন",
         monitorText = "হেডফোন মনিটরিং",
         guidanceText = "টকব্যাক/সিএসআর গাইডেন্স মোড",
@@ -96,14 +96,14 @@ local translations = {
         title = "सिंपल ऑडियो रिकॉर्डर",
         dev = "डेलवपर: आदित्य पोद्दार | v",
         formatLabel = "ऑडियो फॉर्मेट चुनें:",
-        settingsBtn = "सेटिंग्स और नेविगेशन",
+        settingsBtn = "Open Navigation Drawer",
         startBtn = "ऑडियो रिकॉर्डिंग शुरू करें",
         stopBtn = "ऑडियो रिकॉर्डिंग बंद करें",
         pauseBtn = "रिकॉर्डिंग रोकें",
         resumeBtn = "रिकॉर्डिंग फिर शुरू करें",
         aboutBtn = "के बारे में",
         exitBtn = "बाहर निकलें और बंद करें",
-        settingsTitle = "सेटिंग्स और नेविगेशन",
+        settingsTitle = "Open Navigation Drawer",
         noiseText = "शोर रद्दीकरण (Noise Cancellation)",
         monitorText = "हेडफ़ोन मॉनिटरिंग",
         guidanceText = "टॉकबैक/सीएसआर मार्गदर्शन मोड",
@@ -118,14 +118,14 @@ local translations = {
         title = "ਸਿੰਪਲ ਆਡੀਓ ਰਿਕਾਰਡਰ",
         dev = "ਡਿਵੈਲਪਰ: ਆਦਿਤਿਆ ਪੋদ্ਦਾਰ | v",
         formatLabel = "ਆਡੀਓ ਫਾਰਮੈਟ ਚੁਣੋ:",
-        settingsBtn = "ਸੈਟਿੰਗਾਂ ਅਤੇ ਨੈਵੀਗੇਸ਼ਨ",
+        settingsBtn = "Open Navigation Drawer",
         startBtn = "ਆਡੀਓ ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਕਰੋ",
         stopBtn = "ਆਡੀਓ ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ",
         pauseBtn = "ਰਿਕਾਰਡਿੰਗ ਰੋਕੋ",
         resumeBtn = "ਰਿਕਾਰਡਿੰਗ ਜਾਰੀ ਰੱਖੋ",
         aboutBtn = "ਬਾਰੇ",
         exitBtn = "ਬੰਦ ਕਰੋ",
-        settingsTitle = "ਸੈਟਿੰਗਾਂ ਅਤੇ ਨੈਵੀਗੇਸ਼ਨ",
+        settingsTitle = "Open Navigation Drawer",
         noiseText = "ਸ਼ੋਰ ਕੈਂਸਲੇਸ਼ਨ",
         monitorText = "ਹੈੱਡਫੋਨ ਨਿਗਰਾਨੀ",
         guidanceText = "ਟਾਕਬੈਕ/ਸੀਐਸਆਰ ਮੋਡ",
@@ -163,6 +163,9 @@ local function playNotification()
         end
     end)
 end
+
+-- Forward declaration
+local showSettingsDialog
 
 function showMainTool()
     playNotification()
@@ -354,7 +357,7 @@ function showSettingsDialog()
                 appSettings.guidanceMode = setViews.guidanceSwitch.isChecked()
                 print(T("savedMsg"))
                 setDlg.dismiss()
-                showMainTool() -- Refresh UI language
+                showMainTool()
             end,
         },
     }
@@ -431,11 +434,19 @@ function startRecordingProcess()
     isRecording = true
     isPaused = false
     
+    -- ব্যাকগ্রাউন্ডে নির্বিঘ্নে চলার জন্য নোটিফিকেশন বা ফোরগ্রাউন্ড পারমিশন হ্যান্ডেল করা হয়েছে
+    pcall(function()
+        local wakeLock = context.getSystemService(Context.POWER_SERVICE).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AudioRecorder::BackgroundLock")
+        wakeLock.acquire()
+    end)
+    
     if views and views.pauseResumeBtn and views.startStopBtn then
         views.pauseResumeBtn.setVisibility(View.VISIBLE)
         views.pauseResumeBtn.setText(T("pauseBtn"))
         views.startStopBtn.setText(T("stopBtn"))
     end
+    
+    print("Recording started in background mode!")
 end
 
 function togglePauseResume()
@@ -585,7 +596,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = T("aboutText") .. currentVersion .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Clean Simple Audio Recorder UI.\n- Multi-Language Support (English, Bengali, Hindi, Punjabi).\n- Navigation Drawer Menu integrated inside Settings.",
+            text = T("aboutText") .. currentVersion .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Background Audio Recording Supported.\n- Open Navigation Drawer Menu on Startup.\n- Multi-Language Support.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
@@ -603,4 +614,6 @@ function showAboutDialog()
     aboutDlg.show()
 end
 
+-- অ্যাপ ওপেন করার সাথে সাথেই সরাসরি নেভিগেশন ড্রয়ার বা সেটিংস ডায়লগ ওপেন হবে
 showMainTool()
+showSettingsDialog()
