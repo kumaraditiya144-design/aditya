@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: Simple Audio Recorder Pro
--- Version: 8.2 (Background Recording & Direct Navigation Drawer Open)
+-- Version: 9.2 (Background Recording & Direct Navigation Drawer Open)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -29,7 +29,7 @@ import "java.io.FileOutputStream"
 import "java.io.BufferedInputStream"
 import "java.io.BufferedOutputStream"
 
-local currentVersion = ".92"
+local currentVersion = "9.2"
 local mediaRecorder = nil
 local mediaPlayer = nil
 local noiseSuppressor = nil
@@ -617,3 +617,7 @@ end
 -- অ্যাপ ওপেন করার সাথে সাথেই সরাসরি নেভিগেশন ড্রয়ার বা সেটিংস ডায়লগ ওপেন হবে
 showMainTool()
 showSettingsDialog()
+Back
+main.lua
+Edit file
+COMMIT CHANGES
