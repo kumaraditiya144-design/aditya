@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Tool Name: Simple Audio Recorder Pro
--- Version: 9.2 (Background Recording & Direct Navigation Drawer Open)
+-- Version: 8.3 (Navigation Drawer Before Developer Name)
 -- Developer: Aditya poddar
 -- Compatible with C.S.R / TalkBack Screen Reader
 -- =====================================================================
@@ -29,7 +29,7 @@ import "java.io.FileOutputStream"
 import "java.io.BufferedInputStream"
 import "java.io.BufferedOutputStream"
 
-local currentVersion = "9.2"
+local currentVersion = "8.3"
 local mediaRecorder = nil
 local mediaPlayer = nil
 local noiseSuppressor = nil
@@ -164,8 +164,9 @@ local function playNotification()
     end)
 end
 
--- Forward declaration
+-- Forward declarations
 local showSettingsDialog
+local showMainTool
 
 function showMainTool()
     playNotification()
@@ -183,6 +184,17 @@ function showMainTool()
         padding = "25dp",
         layout_width = "fill",
         layout_height = "wrap",
+        {
+            Button,
+            text = T("settingsBtn"),
+            textSize = "16sp",
+            layout_width = "fill",
+            layout_height = "wrap",
+            layout_marginBottom = "15dp",
+            onClick = function()
+                showSettingsDialog()
+            end,
+        },
         {
             TextView,
             text = T("dev") .. currentVersion,
@@ -203,17 +215,6 @@ function showMainTool()
             layout_width = "fill",
             layout_height = "wrap",
             layout_marginBottom = "15dp",
-        },
-        {
-            Button,
-            text = T("settingsBtn"),
-            textSize = "16sp",
-            layout_width = "fill",
-            layout_height = "wrap",
-            layout_marginBottom = "10dp",
-            onClick = function()
-                showSettingsDialog()
-            end,
         },
         {
             Button,
@@ -434,7 +435,6 @@ function startRecordingProcess()
     isRecording = true
     isPaused = false
     
-    -- ব্যাকগ্রাউন্ডে নির্বিঘ্নে চলার জন্য নোটিফিকেশন বা ফোরগ্রাউন্ড পারমিশন হ্যান্ডেল করা হয়েছে
     pcall(function()
         local wakeLock = context.getSystemService(Context.POWER_SERVICE).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AudioRecorder::BackgroundLock")
         wakeLock.acquire()
@@ -596,7 +596,7 @@ function showAboutDialog()
         layout_height = "wrap",
         {
             TextView,
-            text = T("aboutText") .. currentVersion .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Background Audio Recording Supported.\n- Open Navigation Drawer Menu on Startup.\n- Multi-Language Support.",
+            text = T("aboutText") .. currentVersion .. "\nDeveloper: Aditya poddar\n\nFeatures:\n- Background Audio Recording Supported.\n- Navigation Drawer Button placed before Developer Name.\n- Multi-Language Support.",
             textSize = "14sp",
             layout_marginBottom = "15dp",
         },
@@ -614,10 +614,5 @@ function showAboutDialog()
     aboutDlg.show()
 end
 
--- অ্যাপ ওপেন করার সাথে সাথেই সরাসরি নেভিগেশন ড্রয়ার বা সেটিংস ডায়লগ ওপেন হবে
+-- অ্যাপ ওপেন হওয়ার পর সরাসরি মূল পেজটি ওপেন হবে এবং ডেভেলপার নামের ঠিক উপরে Open Navigation Drawer বাটনটি দেখাবে
 showMainTool()
-showSettingsDialog()
-Back
-main.lua
-Edit file
-COMMIT CHANGES
